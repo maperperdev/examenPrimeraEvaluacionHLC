@@ -108,10 +108,10 @@ function pintaTabla($resultados)
 	$tabla .= "</table>";
 	return $tabla;
 }
-// $filtros = array("ESPECIALIDAD" => "LENGUA");
-// $resultados = ejecutarConsulta("select * from PROFESORES");
+ $filtros = array("ESPECIALIDAD" => "LENGUA");
+ $resultados = ejecutarConsulta("select * from PROFESORES");
 
-// print_r(filtrarResultados($resultados, $filtros));
+ print_r(filtrarResultadosUnBucle($resultados, $filtros));
 // // echo aplicarFiltros(array("ESPECIALIDAD" => "LENGUA"));
 
 // print_r($resultados);
