@@ -5,7 +5,7 @@ require "../utilidades/funciones.php";
 
 
 //Apartado 2
-$listaSalarios = salarioPersonal();
+$listaSalarios = consultaSelect("select SALARIO, FUNCION, APELLIDOS, DNI from PERSONAL");
 $listaSalariosProfesores = salarioFuncion("PROFESOR", $listaSalarios);
 $mediaSalarioProfesores = mediaSalario($listaSalariosProfesores);
 $personalSalarioInferiorProfesores = personalSalarioMenorMediaProfesores($mediaSalarioProfesores, $listaSalarios);

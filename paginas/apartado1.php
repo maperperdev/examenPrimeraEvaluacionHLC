@@ -14,18 +14,22 @@ if (isset($_POST["submit_form"])) {
 		$error = "campo vacío";
 	} else {
 		//Apartado 1
-		$listaProfesores = dniProfesores();
+		$listaProfesores = consultaSelect("select DNI, ESPECIALIDAD from PROFESORES");
 		$especialidad = $_POST["especialidad"];
 		$dniProfesoresEspecialidad = profesoresEspecialidad($listaProfesores, $especialidad);
-		$listaPersonal = nombreSalarioPersonal();
-		$listaNombresSalariosPorEspecialidad = nombreSalarioProfesoresDeUnaEspecialidad(
-			$listaPersonal,
-			$dniProfesoresEspecialidad
-		);
-		usort($listaNombresSalariosPorEspecialidad, function ($a, $b) {
-			return $b["SALARIO"] <=> $a["SALARIO"];
-		});
-		$tabla1 = pintaTabla($listaNombresSalariosPorEspecialidad);
+		if (count($dniProfesoresEspecialidad) == 0) {
+			$error = "No existe esa especialidad";
+		} else {
+			$listaPersonal = consultaSelect("select APELLIDOS, SALARIO, DNI from PERSONAL");
+			$listaNombresSalariosPorEspecialidad = nombreSalarioProfesoresDeUnaEspecialidad(
+				$listaPersonal,
+				$dniProfesoresEspecialidad
+			);
+			usort($listaNombresSalariosPorEspecialidad, function ($a, $b) {
+				return $b["SALARIO"] <=> $a["SALARIO"];
+			});
+			$tabla1 = pintaTabla($listaNombresSalariosPorEspecialidad);
+		}
 	}
 }
 

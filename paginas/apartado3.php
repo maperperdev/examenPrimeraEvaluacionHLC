@@ -4,12 +4,12 @@ $tabla3 = "";
 require "../utilidades/funciones.php";
 
 //Apartado 3
-$lista_especialidadesDNI = obtenerEspecialidadesDNI();
-$lista_especialidades = obtenerEspecialidades();
-$listaSalarios = salarioPersonal();
+$lista_especialidadesDNI = consultaSelect("select ESPECIALIDAD, DNI from PROFESORES");
+$listaEspecialidades = filtarRepetidos(consultaSelect("select ESPECIALIDAD from PROFESORES"));
+$listaSalarios = consultaSelect("select SALARIO, FUNCION, APELLIDOS, DNI from PERSONAL");
 $listaSalariosProfesores = salarioFuncion("PROFESOR", $listaSalarios);
-$listaEspecialidadDniSalario = listaEpecialidadDniSalario($lista_especialidadesDNI, $listaSalariosProfesores);
-$mediaSalariosEspecialidad = mediaSalariosEspecialidad($listaEspecialidadDniSalario, $lista_especialidades);
+$listaEspecialidadDniSalario = listaEspecialidadDniSalario($lista_especialidadesDNI, $listaSalariosProfesores);
+$mediaSalariosEspecialidad = mediaSalariosEspecialidad($listaEspecialidadDniSalario, $listaEspecialidades);
 $tabla3 = "<table><tr><th>Especialidad</th><th>Salario medio</th></tr>";
 foreach ($mediaSalariosEspecialidad as $key => $value) {
 	$tabla3 .= "<tr><td>$key</td><td>$value</td></tr>";

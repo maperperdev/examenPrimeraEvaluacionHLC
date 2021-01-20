@@ -6,32 +6,30 @@
 //           - Las tablas a consultar son Profesores y Personal.
 // 					- La aplicación tendrá un menú desde donde gestionar las distintas opciones.
 
-
 /**EJERCICIO 1 */
 // • Listado de profesores pertenecientes a una determinada 
 //especialidad ordenado descendentemente por el campo salario. 
 //La especialidad será introducida por el usuario a través de un pequeño
 // formulario convenientemente validado.
-function dniProfesores()
-{
-	try {
-		$conexion = new PDO('mysql:host=localhost:3306;dbname=PRUEBASCLASE', 'usuario', 'usuario');
-		$statement = $conexion->prepare("select DNI, ESPECIALIDAD 
-																		from PROFESORES");
-		$statement->execute();
-		$resultados =  $statement->fetchAll(PDO::FETCH_ASSOC);
-	} catch (PDOException $e) {
-		$resultados  = null;
-	}
-	return $resultados;
-}
+// function dniProfesores()
+// {
+// 	try {
+// 		$conexion = new PDO('mysql:host=localhost:3306;dbname=PRUEBASCLASE', 'usuario', 'usuario');
+// 		$statement = $conexion->prepare("select DNI, ESPECIALIDAD 
+// 																		from PROFESORES");
+// 		$statement->execute();
+// 		$resultados =  $statement->fetchAll(PDO::FETCH_ASSOC);
+// 	} catch (PDOException $e) {
+// 		$resultados  = null;
+// 	}
+// 	return $resultados;
+// }
 
-function listaPersonalPorDNI($dni)
+function consultaSelect($consulta)
 {
 	try {
 		$conexion = new PDO('mysql:host=localhost:3306;dbname=PRUEBASCLASE', 'usuario', 'usuario');
-		$statement = $conexion->prepare("select APELLIDOS, SALARIO 
-																		from PERSONAL");
+		$statement = $conexion->prepare($consulta);
 		$statement->execute();
 		$resultados =  $statement->fetchAll(PDO::FETCH_ASSOC);
 	} catch (PDOException $e) {
@@ -49,20 +47,6 @@ function profesoresEspecialidad($listaProfesores, $especialidad)
 		}
 	}
 	return $profesoresEspecialidad;
-}
-
-function nombreSalarioPersonal()
-{
-	try {
-		$conexion = new PDO('mysql:host=localhost:3306;dbname=PRUEBASCLASE', 'usuario', 'usuario');
-		$statement = $conexion->prepare("select APELLIDOS, SALARIO, DNI
-																		from PERSONAL");
-		$statement->execute();
-		$resultados =  $statement->fetchAll(PDO::FETCH_ASSOC);
-	} catch (PDOException $e) {
-		$resultados  = null;
-	}
-	return $resultados;
 }
 
 
@@ -105,24 +89,7 @@ function pintaTabla($resultados)
 
 
 // /**EJERCICIO 2 */
-//  Listado, en formato tabla, de los dni de todo el personal con un salario inferior
-// a la media de los salarios de los profesores.
 
-function salarioPersonal()
-{
-	try {
-		$conexion = new PDO('mysql:host=localhost:3306;dbname=PRUEBASCLASE', 'usuario', 'usuario');
-		$statement = $conexion->prepare("select SALARIO, FUNCION, APELLIDOS, DNI
-																		from PERSONAL");
-		$statement->execute();
-		$resultados =  $statement->fetchAll(PDO::FETCH_ASSOC);
-	} catch (PDOException $e) {
-		return null;
-	}
-	return $resultados;
-}
-
-//print_r($listaSalarios);
 function salarioFuncion($funcion, $listaSalarios)
 {
 	$listaSalarioProfesores = array();
@@ -135,8 +102,6 @@ function salarioFuncion($funcion, $listaSalarios)
 	return $listaSalarioProfesores;
 }
 
-
-
 function mediaSalario($listaSalarios)
 {
 	$media = 0;
@@ -145,9 +110,6 @@ function mediaSalario($listaSalarios)
 	}
 	return $media / count($listaSalarios);
 }
-
-
-
 
 function personalSalarioMenorMediaProfesores($mediaSalarioProfesores, $listaSalarios)
 {
@@ -165,41 +127,7 @@ function personalSalarioMenorMediaProfesores($mediaSalarioProfesores, $listaSala
 // Generar y visualizar un array asociativo con la siguiente estructura: 
 // especialidad-> salario_medio. 
 
-function obtenerEspecialidadesDNI()
-{
-	try {
-		$conexion = new PDO('mysql:host=localhost:3306;dbname=PRUEBASCLASE', 'usuario', 'usuario');
-		$statement = $conexion->prepare("select ESPECIALIDAD, DNI
-																		from PROFESORES");
-		$statement->execute();
-		$resultados =  $statement->fetchAll(PDO::FETCH_ASSOC);
-	} catch (PDOException $e) {
-		return null;
-	}
-	return $resultados;
-}
-
-function obtenerEspecialidades()
-{
-	try {
-		$conexion = new PDO('mysql:host=localhost:3306;dbname=PRUEBASCLASE', 'usuario', 'usuario');
-		$statement = $conexion->prepare("select ESPECIALIDAD
-																		from PROFESORES");
-		$statement->execute();
-		$resultados =  $statement->fetchAll(PDO::FETCH_ASSOC);
-	} catch (PDOException $e) {
-		return null;
-	}
-	$especialidades = array();
-	foreach ($resultados as $resultado) {
-		if (!in_array($resultado["ESPECIALIDAD"], $especialidades)) {
-			$especialidades[] = $resultado["ESPECIALIDAD"];
-		}
-	}
-	return $especialidades;
-}
-
-function listaEpecialidadDniSalario($lista_especialidadesDNI, $listaSalarioProfesores)
+function listaEspecialidadDniSalario($lista_especialidadesDNI, $listaSalarioProfesores)
 {
 	$listaEspecialidadDniSalario = array();
 	foreach ($lista_especialidadesDNI as $especialidadDNI) {
@@ -214,8 +142,6 @@ function listaEpecialidadDniSalario($lista_especialidadesDNI, $listaSalarioProfe
 	}
 	return $listaEspecialidadDniSalario;
 }
-
-
 
 function mediaSalariosEspecialidad($listaSalariosProfesores, $lista_especialidades)
 {
@@ -232,8 +158,19 @@ function mediaSalariosEspecialidad($listaSalariosProfesores, $lista_especialidad
 			}
 		}
 		$mediaSalariosEspecialidad[$especialidad] = $mediaSalariosEspecialidad[$especialidad]
-																							 / $numeroProfesoresPorEspecialidad;
+			/ $numeroProfesoresPorEspecialidad;
 	}
 	return $mediaSalariosEspecialidad;
 }
-?>
+
+function filtarRepetidos($lista)
+{
+	$clave = key($lista[0]);
+	$arrayFiltrada = array();
+	foreach ($lista as $elemento) {
+		if (!in_array($elemento[$clave], $arrayFiltrada)) {
+			$arrayFiltrada[] = $elemento[$clave];
+		}
+	}		
+		return $arrayFiltrada;
+}
