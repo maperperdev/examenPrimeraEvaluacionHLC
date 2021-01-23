@@ -1,31 +1,6 @@
 <?php
 
-//       Datos a tener en cuenta:
-//           - No utilizar join ni filtros en las consultas sql.
-//           - No utilizar en las consultas las funciones avg, sum o count.
-//           - Las tablas a consultar son Profesores y Personal.
-// 					- La aplicación tendrá un menú desde donde gestionar las distintas opciones.
-
-/**EJERCICIO 1 */
-// • Listado de profesores pertenecientes a una determinada 
-//especialidad ordenado descendentemente por el campo salario. 
-//La especialidad será introducida por el usuario a través de un pequeño
-// formulario convenientemente validado.
-// function dniProfesores()
-// {
-// 	try {
-// 		$conexion = new PDO('mysql:host=localhost:3306;dbname=PRUEBASCLASE', 'usuario', 'usuario');
-// 		$statement = $conexion->prepare("select DNI, ESPECIALIDAD 
-// 																		from PROFESORES");
-// 		$statement->execute();
-// 		$resultados =  $statement->fetchAll(PDO::FETCH_ASSOC);
-// 	} catch (PDOException $e) {
-// 		$resultados  = null;
-// 	}
-// 	return $resultados;
-// }
-
-function consultaSelect($consulta)
+function ejecutarConsulta($consulta)
 {
 	try {
 		$conexion = new PDO('mysql:host=localhost:3306;dbname=PRUEBASCLASE', 'usuario', 'usuario');
@@ -38,33 +13,122 @@ function consultaSelect($consulta)
 	return $resultados;
 }
 
-function profesoresEspecialidad($listaProfesores, $especialidad)
+function filtrarResultadosUnBucle($resultados, $filtros)
 {
-	$profesoresEspecialidad = array();
-	foreach ($listaProfesores as $profesor) {
-		if ($profesor["ESPECIALIDAD"] == $especialidad) {
-			$profesoresEspecialidad[] = $profesor["DNI"];
+	$array_filtrada = array();
+	foreach ($resultados as $resultado) {
+		if (aplicarFiltros($resultado, $filtros)) {
+			$array_filtrada[] = $resultado;
 		}
 	}
-	return $profesoresEspecialidad;
+	return $array_filtrada;
 }
 
-
-function nombreSalarioProfesoresDeUnaEspecialidad($listaPersonal, $dniProfesoresEspecialidad)
+function filtrarResultadosDosBucles($resultados, $arrayFiltro, $nombreFiltro)
 {
-	$listaNombreSalarioProfesoresDeUnaEspecialidad = array();
-	foreach ($dniProfesoresEspecialidad as $dni) {
-		foreach ($listaPersonal as $persona) {
-			if ($dni == $persona["DNI"]) {
-				$listaNombreSalarioProfesoresDeUnaEspecialidad[] = array(
-					"APELLIDOS" => $persona["APELLIDOS"],
-					"SALARIO" => $persona["SALARIO"]
-				);
+	$array_filtrada = array();
+	foreach ($arrayFiltro as $filtro) {
+		foreach ($resultados as $resultado) {
+			if ($resultado[$nombreFiltro] == $filtro[$nombreFiltro]) {
+				$array_filtrada[] = $resultado;
 			}
 		}
 	}
-	return $listaNombreSalarioProfesoresDeUnaEspecialidad;
+	return $array_filtrada;
 }
+
+
+function aplicarFiltros($filaResultado, $filtros)
+{
+	foreach ($filtros as $filtro => $valor) {
+		if ($filaResultado[$filtro] != $valor) {
+			return false;
+		}
+	}
+	return true;
+}
+
+function mediaCampo($input, $campo)
+{
+	$media = 0;
+	foreach ($input as $fila) {
+		$media += $fila[$campo];
+	}
+	return $media / count($input);
+}
+
+function filtraPorCondicion($condicion, $valorCampo, $nombreCampo, $arraySinFiltrar)
+{
+	$resultadoFiltrado = array();
+
+	if ($condicion == "<") {
+		foreach ($arraySinFiltrar as $fila) {
+			if ($fila[$nombreCampo] < $valorCampo) {
+				$resultadoFiltrado[] = $fila;
+			}
+		}
+	} elseif ($condicion == ">") {
+		foreach ($arraySinFiltrar as $fila) {
+			if ($fila[$nombreCampo] > $valorCampo) {
+				$resultadoFiltrado[] = $fila;
+			}
+		}
+	} else {
+		foreach ($arraySinFiltrar as $fila) {
+			if ($fila[$nombreCampo] == $valorCampo) {
+				$resultadoFiltrado[] = $fila;
+			}
+		}
+	}
+	return $resultadoFiltrado;
+}
+
+function mediaSalariosEspecialidad($listaSalariosProfesores, $lista_especialidades)
+{
+	$mediaSalariosEspecialidad = array();
+	foreach ($lista_especialidades as $especialidad) {
+		$numeroProfesoresPorEspecialidad = 0;
+		foreach ($listaSalariosProfesores as $profesor) {
+			if (!isset($mediaSalariosEspecialidad[$especialidad])) {
+				$mediaSalariosEspecialidad[$especialidad] = $profesor["SALARIO"];
+				$numeroProfesoresPorEspecialidad++;
+			} else if ($especialidad == $profesor["ESPECIALIDAD"]) {
+				$mediaSalariosEspecialidad[$especialidad] += $profesor["SALARIO"];
+				$numeroProfesoresPorEspecialidad++;
+			}
+		}
+		$mediaSalariosEspecialidad[$especialidad] = $mediaSalariosEspecialidad[$especialidad]
+			/ $numeroProfesoresPorEspecialidad;
+	}
+	return $mediaSalariosEspecialidad;
+}
+
+function filtrarCampos($inputArray, $arrayCamposMostrar)
+{
+	$outputArray = array();
+	foreach ($inputArray as $fila) {
+		$filaFiltrada = array();
+		foreach ($arrayCamposMostrar as $campo) {
+			$filaFiltrada[$campo] = $fila[$campo];
+		}
+		$outputArray[] = $filaFiltrada;
+	}
+	return $outputArray;
+}
+
+function agregaCampo($input, $campoAgregar, $campoUnion)
+{
+	$arrayFinal = array();
+	foreach ($campoAgregar as $fila) {
+		foreach ($input as $filaInicial) {
+			if ($filaInicial[$campoUnion] == $fila[$campoUnion]) {
+				$arrayFinal[] = array_merge($filaInicial, $fila);
+			}
+		}
+	}
+	return $arrayFinal;
+}
+
 
 function pintaTabla($resultados)
 {
@@ -88,89 +152,3 @@ function pintaTabla($resultados)
 }
 
 
-// /**EJERCICIO 2 */
-
-function salarioFuncion($funcion, $listaSalarios)
-{
-	$listaSalarioProfesores = array();
-
-	foreach ($listaSalarios as $salarioFuncion) {
-		if ($salarioFuncion["FUNCION"] == $funcion) {
-			$listaSalarioProfesores[] = $salarioFuncion;
-		}
-	}
-	return $listaSalarioProfesores;
-}
-
-function mediaSalario($listaSalarios)
-{
-	$media = 0;
-	foreach ($listaSalarios as $salario) {
-		$media += $salario["SALARIO"];
-	}
-	return $media / count($listaSalarios);
-}
-
-function personalSalarioMenorMediaProfesores($mediaSalarioProfesores, $listaSalarios)
-{
-	$personalSalarioInferiorMediaProfesores = array();
-	foreach ($listaSalarios as $salario) {
-		if ($salario["SALARIO"] < $mediaSalarioProfesores) {
-			$personalSalarioInferiorMediaProfesores[] = array("Nombre" => $salario["APELLIDOS"]);
-		}
-	}
-	return $personalSalarioInferiorMediaProfesores;
-}
-
-
-//  Ejercicio 3
-// Generar y visualizar un array asociativo con la siguiente estructura: 
-// especialidad-> salario_medio. 
-
-function listaEspecialidadDniSalario($lista_especialidadesDNI, $listaSalarioProfesores)
-{
-	$listaEspecialidadDniSalario = array();
-	foreach ($lista_especialidadesDNI as $especialidadDNI) {
-		foreach ($listaSalarioProfesores as $salarioProfesor) {
-			if ($especialidadDNI["DNI"] == $salarioProfesor["DNI"]) {
-				$listaEspecialidadDniSalario[] = array(
-					"SALARIO" => $salarioProfesor["DNI"],
-					"ESPECIALIDAD" => $especialidadDNI["ESPECIALIDAD"]
-				);
-			}
-		}
-	}
-	return $listaEspecialidadDniSalario;
-}
-
-function mediaSalariosEspecialidad($listaSalariosProfesores, $lista_especialidades)
-{
-	$mediaSalariosEspecialidad = array();
-	foreach ($lista_especialidades as $especialidad) {
-		$numeroProfesoresPorEspecialidad = 0;
-		foreach ($listaSalariosProfesores as $profesor) {
-			if (!isset($mediaSalariosEspecialidad[$especialidad])) {
-				$mediaSalariosEspecialidad[$especialidad] = $profesor["SALARIO"];
-				$numeroProfesoresPorEspecialidad++;
-			} else if ($especialidad == $profesor["ESPECIALIDAD"]) {
-				$mediaSalariosEspecialidad[$especialidad] += $profesor["SALARIO"];
-				$numeroProfesoresPorEspecialidad++;
-			}
-		}
-		$mediaSalariosEspecialidad[$especialidad] = $mediaSalariosEspecialidad[$especialidad]
-			/ $numeroProfesoresPorEspecialidad;
-	}
-	return $mediaSalariosEspecialidad;
-}
-
-function filtarRepetidos($lista)
-{
-	$clave = key($lista[0]);
-	$arrayFiltrada = array();
-	foreach ($lista as $elemento) {
-		if (!in_array($elemento[$clave], $arrayFiltrada)) {
-			$arrayFiltrada[] = $elemento[$clave];
-		}
-	}		
-		return $arrayFiltrada;
-}

@@ -4,17 +4,26 @@ $tabla3 = "";
 require "../utilidades/funciones.php";
 
 //Apartado 3
-$lista_especialidadesDNI = consultaSelect("select ESPECIALIDAD, DNI from PROFESORES");
-$listaEspecialidades = filtarRepetidos(consultaSelect("select ESPECIALIDAD from PROFESORES"));
-$listaSalarios = consultaSelect("select SALARIO, FUNCION, APELLIDOS, DNI from PERSONAL");
-$listaSalariosProfesores = salarioFuncion("PROFESOR", $listaSalarios);
-$listaEspecialidadDniSalario = listaEspecialidadDniSalario($lista_especialidadesDNI, $listaSalariosProfesores);
-$mediaSalariosEspecialidad = mediaSalariosEspecialidad($listaEspecialidadDniSalario, $listaEspecialidades);
-$tabla3 = "<table><tr><th>Especialidad</th><th>Salario medio</th></tr>";
-foreach ($mediaSalariosEspecialidad as $key => $value) {
-	$tabla3 .= "<tr><td>$key</td><td>$value</td></tr>";
-}
-$tabla3 .= "</table>";
+$listaPersonal = ejecutarConsulta("select * from PERSONAL");
+$filtro = array("FUNCION" => "PROFESOR");
+$listaDNIProfesores = filtrarCampos(filtrarResultadosUnBucle($listaPersonal, $filtro), array("DNI", "SALARIO"));
+$listaProfesores = ejecutarConsulta("select * from PROFESORES");
+$salariosEspecialidad =
+	filtrarCampos(
+		agregaCampo($listaProfesores, $listaDNIProfesores, "DNI"),
+		array("ESPECIALIDAD", "SALARIO")
+	);
+$mediaInformatica = mediaCampo(filtrarResultadosUnBucle($salariosEspecialidad, array("ESPECIALIDAD" => "INFORMÁTICA")), "SALARIO");
+$mediaMatematicas = mediaCampo(filtrarResultadosUnBucle($salariosEspecialidad, array("ESPECIALIDAD" => "MATEMÁTICAS")), "SALARIO");
+$mediaLengua = mediaCampo(filtrarResultadosUnBucle($salariosEspecialidad, array("ESPECIALIDAD" => "LENGUA")), "SALARIO");
+
+$arrayTabla = array(
+	array("ESPECIALIDAD" => "INFORMÁTICA", "SALARIO" => $mediaInformatica),
+	array("ESPECIALIDAD" => "MATEMÁTICAS", "SALARIO" => $mediaMatematicas),
+	array("ESPECIALIDAD" => "LENGUA", "SALARIO" => $mediaLengua)
+);
+
+$tabla3 = pintaTabla($arrayTabla);
 ?>
 
 
